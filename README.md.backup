@@ -10,7 +10,7 @@ Copy (unzip if needed) "Tesselator.FCMacro" and the folder "Tessellator" into Fr
 
 To find it out, open FreeCAD, Menu "Macro" -> "Macros" -> "User macros location:"
 
-It is really recommended to create an shortcut with icon on a toolbar (see icon file in the "Tessellator" folder). 
+It is really recommended to create an shortcut with icon on a toolbar (see icon file "Tessellator_icon.png"). 
 
 
 ## Usage:
