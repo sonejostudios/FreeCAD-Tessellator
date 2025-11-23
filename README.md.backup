@@ -35,7 +35,7 @@ It is really recommended to create an shortcut on a toolbar (use the icon file i
 
 ## Algorithms:
 
-### Boards Filling
+### Board Filling
 
 
 This will fill the area, cutting the board at the end of the row into two parts, A and B.
