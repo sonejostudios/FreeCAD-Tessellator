@@ -8,12 +8,8 @@ import Draft
 import os
 import json
 
-# This macro creates a wall of boards/tiles inside a given area
 
-# todo:
-# add board color?
-# add gaps?
-# check if pattern is empty/invalid
+# This macro creates a wall of boards/tiles inside a given area
 
 
 __title__   = "Tessellator"
@@ -22,7 +18,6 @@ __date__    = "2025-11-22"
 __url__     = ""
 __wiki__    = ""
 __version__ = "1.0.0"
-
 
 
 
