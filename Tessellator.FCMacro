@@ -1,23 +1,44 @@
-import time
+# A FreeCAD BIM macro to fill up areas with boards or generate tile patterns.
+# Two Algorithms are available:
+#
+# Board Filling:
+# This will fill up the area, cutting the board at the end of the row into two parts, A and B. The A-Cut is used at the end of the current row and the B-Cut at the beginning of the next row.
+# This is typically used to tessellate OSB or other boards on floors and walls.
+#
+# Tile Pattern:
+# This will fill up the area, using at the beginning of each row a specific tile length, given as a series of lengths (separated by commas). E.g: 300 (A), 200 (B), 100 (C).
+# This is typically used to tessellate bricks on floors and walls. For a typical wall, use the length of the tile as the first value, then the half of it. E.g: 500, 250.
+#
+# Options:
+# - Reverse creation order
+# - Create the area object
+# - Add lengths labels to the boards/tiles for cutting
+
+
+
 import FreeCAD
 from FreeCAD import Placement, Rotation, Vector
 import FreeCADGui
 import math
-import Part
 import Draft
 import os
 import json
 
 
-# This macro creates a wall of boards/tiles inside a given area
-
-
-__title__   = "Tessellator"
-__author__  = "Vince@Sonejo"
-__date__    = "2025-11-22"
-__url__     = ""
-__wiki__    = ""
-__version__ = "1.0.0"
+__Name__ = "Tessellator"
+__Comment__ = "A FreeCAD BIM macro to fill up areas with boards or generate tile patterns."
+__Author__ = "Vincent Rateau"
+__Date__ = "2025-11-23"
+__Version__ = "1.0.0"
+__License__ = "GPL 3.0"
+__Web__ = "https://github.com/sonejostudios/FreeCAD-Tessellator"
+__Wiki__ = ""
+__Icon__ = "Tessellator/Tessellator_icon.svg"
+__Help__ = "Selecting a face before launching will use the face's size as area."
+__Status__ = "Stable"
+__Requires__ = ""
+__Communication__ = "https://github.com/sonejostudios/FreeCAD-Tessellator/issues"
+__Files__ = "Tessellator/Tessellator_dialog.ui, Tessellator/Tessellator_screenshot.png, Tessellator/Tessellator_screenshot2.png"
 
 
 
@@ -30,9 +51,11 @@ PRESETS = [("OSB3 - 2050 x 625 x 15", 2050, 625, 15),
             ("Plasterboard - 2000 x 1250 x 12.5", 2000, 1250, 12.5),
             ("Tile - 150 x 150 x 8", 150, 150, 8),
             ("Tile - 200 x 200 x 8", 200, 200, 8),
+            ("Brick - 400 x 200 x 150", 400, 200, 150),
             ("Brick - 500 x 200 x 200", 500, 200, 200)]
 
 DOC = FreeCAD.ActiveDocument
+
 
 class BoxTaskPanel:
     def __init__(self):
@@ -40,13 +63,13 @@ class BoxTaskPanel:
         self.macro_path = FreeCAD.getUserMacroDir()
 
         # set save file
-        self.save_file_path = os.path.join(self.macro_path, __title__, "Tessellator_save.json")
+        self.save_file_path = os.path.join(self.macro_path, __Name__, "Tessellator_save.json")
 
         # load ui
-        self.form = FreeCADGui.PySideUic.loadUi(os.path.join(self.macro_path, __title__, "Tessellator_dialog.ui"))
+        self.form = FreeCADGui.PySideUic.loadUi(os.path.join(self.macro_path, __Name__, "Tessellator_dialog.ui"))
 
         # name and version
-        self.form.setWindowTitle(__title__ + " " + __version__)
+        self.form.setWindowTitle(__Name__ + " " + __Version__)
 
         # sizes
         self.AREA_LENGTH = 5600
@@ -477,7 +500,6 @@ class BoxTaskPanel:
             self.board_container.addObject(self.label_container)
 
 
-
         # rotate for vertical design
         if self.form.RadioBtVertical.isChecked():
             self.board_container.Placement = Placement(Vector(0, 0, 0), Rotation(Vector(1, 0, 0), 90))
@@ -495,8 +517,9 @@ class BoxTaskPanel:
 
 
 # show Task Dialog
-panel = BoxTaskPanel()
-FreeCADGui.Control.showDialog(panel)
+if __name__ == '__main__':
+    panel = BoxTaskPanel()
+    FreeCADGui.Control.showDialog(panel)
 
 
 

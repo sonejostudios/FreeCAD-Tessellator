@@ -1,5 +1,5 @@
 # FreeCAD Tessellator
-A FreeCAD BIM macro to fill areas with boards or generate tile patterns.
+A FreeCAD BIM macro to fill up areas with boards or generate tile patterns.
 
 
 ![screenshot](Tessellator/Tessellator_screenshot.png "FreeCAD Tesselator")
@@ -38,7 +38,7 @@ It is really recommended to create an shortcut on a toolbar (use the icon file i
 ### Board Filling
 
 
-This will fill the area, cutting the board at the end of the row into two parts, A and B.
+This will fill up the area, cutting the board at the end of the row into two parts, A and B.
 The A-Cut is used at the end of the current row and the B-Cut at the beginning of the next row.
 
 ![screenshot](Tessellator/filling.png "FreeCAD Tesselator")
@@ -48,7 +48,7 @@ This is typically used to tessellate OSB or other boards on floors and walls.
 
 
 ### Tile Pattern
-This will fill the area, using at the beginning of each row a specific tile length, given as a series of lengths (separated by commas). E.g: 300 (A), 200 (B), 100 (C).
+This will fill up the area, using at the beginning of each row a specific tile length, given as a series of lengths (separated by commas). E.g: 300 (A), 200 (B), 100 (C).
 
 ![screenshot](Tessellator/pattern.png "FreeCAD Tesselator")
 

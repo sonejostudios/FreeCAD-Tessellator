@@ -241,7 +241,7 @@
       <item>
        <widget class="QTabWidget" name="TabWidgetAlgorithm">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="elideMode">
          <enum>Qt::TextElideMode::ElideNone</enum>
@@ -260,7 +260,7 @@
              <bool>true</bool>
             </property>
             <property name="plainText">
-             <string>This will fill the area, cutting the board at the end of the row into two parts, A and B.
+             <string>This will fill up the area, cutting the board at the end of the row into two parts, A and B.
 The A-Cut is used at the end of the current row and the B-Cut at the beginning of the next row.
 
 This is typically used to tessellate OSB or other boards on floors and walls.</string>
@@ -307,7 +307,7 @@ This is typically used to tessellate OSB or other boards on floors and walls.</s
              <bool>true</bool>
             </property>
             <property name="plainText">
-             <string>This will fill the area, using at the beginning of each row a specific tile length, given as a series of lengths (separated by commas). E.g: 300, 200, 100.
+             <string>This will fill up the area, using at the beginning of each row a specific tile length, given as a series of lengths (separated by commas). E.g: 300, 200, 100.
 
 This is typically used to tessellate bricks on floors and walls. For a typical wall, use the length of the tile as the first value, then the half of it. E.g: 500, 250.</string>
             </property>
