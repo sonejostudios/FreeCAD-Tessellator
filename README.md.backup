@@ -8,9 +8,9 @@ A FreeCAD BIM macro to fill areas with boards or generate tile patterns.
 ## Install:
 Copy (unzip if needed) "Tessellator.FCMacro" and the folder "Tessellator" into FreeCAD's Macro folder.
 
-To find it out, open FreeCAD, Menu "Macro" -> "Macros" -> "User macros location:"
+To find it out, open FreeCAD, Menu "Macro" -> "Macros" -> "User macros location:". [More Info](https://wiki.freecad.org/How_to_install_macros)
 
-It is really recommended to create an shortcut on a toolbar (use the icon file in the "Tessellator" folder).
+It is really recommended to create an shortcut on a toolbar (use the icon file in the "Tessellator" folder). [More Info](https://wiki.freecad.org/Customize_Toolbars)
 
 
 ## Usage:
@@ -28,7 +28,7 @@ It is really recommended to create an shortcut on a toolbar (use the icon file i
 5. "Reverse Order" will reverse the generation order. Useful for floors, but not recommended for walls.
 6. "Create Area Object" will create a dummy area object (not really needed if you already have it selected in your project)
 7. "Add Length Labels" will create a label on each board showing it's length. Really useful for the Board Filling algorithm, so you will know exactly where to cut each board.
-8. "Estimated Amount" will try to (slightly over-) estimate the amount of boards/tiles needed. This is the amount of object which wiull be generated
+8. "Estimated Amount" will try to (slightly over-) estimate the amount of boards/tiles needed. This is the amount of objects which are going to be generated (be careful with high numbers!).
 
 ![screenshot](Tessellator/Tessellator_screenshot2.png "FreeCAD Tesselator")
 

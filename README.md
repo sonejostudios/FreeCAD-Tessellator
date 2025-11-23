@@ -8,9 +8,9 @@ A FreeCAD BIM macro to fill areas with boards or generate tile patterns.
 ## Install:
 Copy (unzip if needed) "Tessellator.FCMacro" and the folder "Tessellator" into FreeCAD's Macro folder.
 
-To find it out, open FreeCAD, Menu "Macro" -> "Macros" -> "User macros location:"
+To find it out, open FreeCAD, Menu "Macro" -> "Macros" -> "User macros location:". [More Info](https://wiki.freecad.org/How_to_install_macros)
 
-It is really recommended to create an shortcut on a toolbar (use the icon file in the "Tessellator" folder).
+It is really recommended to create an shortcut on a toolbar (use the icon file in the "Tessellator" folder). [More Info](https://wiki.freecad.org/Customize_Toolbars)
 
 
 ## Usage:
