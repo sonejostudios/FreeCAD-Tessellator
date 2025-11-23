@@ -6,26 +6,29 @@ A FreeCAD BIM macro to fill areas with boards or generate tile patterns.
 
 
 ## Install:
-Copy (unzip if needed) "Tesselator.FCMacro" and the folder "Tessellator" into FreeCAD's Macro folder.
+Copy (unzip if needed) "Tessellator.FCMacro" and the folder "Tessellator" into FreeCAD's Macro folder.
 
 To find it out, open FreeCAD, Menu "Macro" -> "Macros" -> "User macros location:"
 
-It is really recommended to create an shortcut (with icon) on a toolbar (see icon file in the "Tessellator" folder).
+It is really recommended to create an shortcut on a toolbar (use the icon file in the "Tessellator" folder).
 
 
 ## Usage:
-Warning: Because Tesselator creates a lot of objects, it is recommended to use it rather in studies (create a new project of a specific floor/wall to figure out the board amounts and the cuttings) than on big BIM projects.
+**Warning:** Because Tessellator creates a lot of objects, it is recommended to use it rather in studies (create a new project of a specific floor/wall to figure out the board amounts and the cuttings) than on big BIM projects.
+
+**Info:** Tesselator will remember the latest used values.
 
 
-1. Set if you want to fill a horizontal or vertical area with the dedicated radio buttons
-2. Enter the area's length and width/height. If a surface is selected, Tesellator will try to fill it automatically (swap if needed).
+1. Choose between "Horizontal (Floor)" and "Vertical (Wall)". 
+2. Enter the area's length and width/height. If a surface is selected, Tessellator will try to fill it automatically (swap if needed).
 3. Enter the board/tile measurements or select a preset.
 4. Choose the algorithm: 
-    * **"Board Filling"** if you want to fill the area with boards like OSB or plaster boards.
+    * **"Board Filling"** if you want to fill the area with boards like OSB or plasterboards.
     * **"Tile Pattern"** if you want to fill the area with a specific row starting sequence (like for tiles ar a wall of bricks).
 5. "Reverse Order" will reverse the generation order. Useful for floors, but not recommended for walls.
 6. "Create Area Object" will create a dummy area object (not really needed if you already have it selected in your project)
 7. "Add Length Labels" will create a label on each board showing it's length. Really useful for the Board Filling algorithm, so you will know exactly where to cut each board.
+8. "Estimated Amount" will try to (slightly over-) estimate the amount of boards/tiles needed. This is the amount of objects which are going to be generated (be careful with high numbers!).
 
 ![screenshot](Tessellator/Tessellator_screenshot2.png "FreeCAD Tesselator")
 
