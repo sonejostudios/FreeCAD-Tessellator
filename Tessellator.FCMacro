@@ -88,10 +88,10 @@ class BoxTaskPanel:
         # self.form.BoardLength.setValue(2000)
         # self.form.BoardWidth.setValue(500)
 
-        self.form.AreaLength.setValue(3150)
-        self.form.AreaWidth.setValue(2000)
-        self.form.BoardLength.setValue(2000)
-        self.form.BoardWidth.setValue(600)
+        # self.form.AreaLength.setValue(3150)
+        # self.form.AreaWidth.setValue(2000)
+        # self.form.BoardLength.setValue(2000)
+        # self.form.BoardWidth.setValue(600)
 
 
 
