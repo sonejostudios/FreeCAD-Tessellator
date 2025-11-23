@@ -1,0 +1,510 @@
+import time
+import FreeCAD
+from FreeCAD import Placement, Rotation, Vector
+import FreeCADGui
+import math
+import Part
+import Draft
+import os
+import json
+
+# This macro creates a wall of boards/tiles inside a given area
+
+# todo:
+# add board color?
+# add gaps?
+# check if pattern is empty/invalid
+
+
+__title__   = "Tessellator"
+__author__  = "Vince@Sonejo"
+__date__    = "2025-11-22"
+__url__     = ""
+__wiki__    = ""
+__version__ = "1.0.0"
+
+
+
+
+PRESETS = [("OSB3 - 2050 x 625 x 15", 2050, 625, 15),
+            ("OSB3 - 2050 x 675 x 15", 2050, 675, 15),
+            ("OSB3 - 2500 x 675 x 15", 2500, 675, 15),
+            ("ESB - 2050 x 625 x 15", 2050, 625, 15),
+            ("ESB - 2580 x 675 x 15", 2580, 675, 15),
+            ("Plasterboard - 2000 x 600 x 12.5", 2000, 600, 12.5),
+            ("Plasterboard - 2000 x 1250 x 12.5", 2000, 1250, 12.5),
+            ("Tile - 150 x 150 x 8", 150, 150, 8),
+            ("Tile - 200 x 200 x 8", 200, 200, 8),
+            ("Brick - 500 x 200 x 200", 500, 200, 200)]
+
+DOC = FreeCAD.ActiveDocument
+
+class BoxTaskPanel:
+    def __init__(self):
+        # get macro path
+        self.macro_path = FreeCAD.getUserMacroDir()
+
+        # set save file
+        self.save_file_path = os.path.join(self.macro_path, __title__, "Tessellator_save.json")
+
+        # load ui
+        self.form = FreeCADGui.PySideUic.loadUi(os.path.join(self.macro_path, __title__, "Tessellator_dialog.ui"))
+
+        # name and version
+        self.form.setWindowTitle(__title__ + " " + __version__)
+
+        # sizes
+        self.AREA_LENGTH = 5600
+        self.AREA_WIDTH = 3800
+        self.BOARD_LENGTH = 2050
+        self.BOARD_WIDTH = 625
+        self.BOARD_HEIGHT = 18
+        self.POS_X = 0
+        self.POS_Y = 0
+        self.N_BOARD = 0
+
+        # create board template
+        self.board = {"x": self.POS_X, "y": self.POS_Y, "bl": self.BOARD_LENGTH, "bw": self.BOARD_WIDTH, "n": self.N_BOARD}
+
+        # hide progress bar
+        self.form.ProgressBar.hide()
+
+        # set presets
+        self.form.PresetsComboBox.insertItems(1, [i[0] for i in PRESETS])
+
+        # load save
+        self.load_values()
+
+        # set vertical design labels
+        self.set_vertical_design_labels(self.form.RadioBtVertical.isChecked())
+
+        # show selection sizes
+        self.show_selection_sizes()
+
+
+        # DEV
+        # self.form.AreaLength.setValue(5200)
+        # self.form.AreaWidth.setValue(1200)
+        # self.form.BoardLength.setValue(2000)
+        # self.form.BoardWidth.setValue(500)
+
+        self.form.AreaLength.setValue(3150)
+        self.form.AreaWidth.setValue(2000)
+        self.form.BoardLength.setValue(2000)
+        self.form.BoardWidth.setValue(600)
+
+
+
+        # update results
+        self.update_results()
+
+
+        # signals
+        self.form.RadioBtHorizontal.clicked.connect(self.set_vertical_design_labels)
+        self.form.RadioBtVertical.clicked.connect(self.set_vertical_design_labels)
+
+        self.form.AreaLength.valueChanged.connect(self.update_results)
+        self.form.AreaWidth.valueChanged.connect(self.update_results)
+        self.form.SwapAreaValues.clicked.connect(self.swap_area_values)
+
+        self.form.PresetsComboBox.currentIndexChanged.connect(self.set_preset)
+
+        self.form.BoardLength.valueChanged.connect(self.update_results)
+        self.form.BoardWidth.valueChanged.connect(self.update_results)
+        self.form.SwapBoardValues.clicked.connect(self.swap_board_values)
+
+        self.form.TabWidgetAlgorithm.currentChanged.connect(self.update_results)
+
+
+
+    def accept(self):
+        if (self.AREA_LENGTH == 0) or (self.AREA_WIDTH == 0) or (self.board["bl"] == 0) or (self.board["bw"] == 0) or (self.BOARD_HEIGHT == 0) or self.form.LineEditPattern.text() == "":
+           print("Error! None of the values can be 0 or empty!")
+           return
+
+        # set board template
+        self.board = {"x": self.POS_X, "y": self.POS_Y, "bl": self.BOARD_LENGTH, "bw": self.BOARD_WIDTH, "n": self.N_BOARD}
+
+        # save values
+        self.save_values()
+
+        # run macro
+        self.run_all()
+
+        # close dialog
+        FreeCADGui.Control.closeDialog()
+       
+
+
+
+    def save_values(self):
+        data = {
+            "area_length": self.form.AreaLength.value(),
+            "area_width": self.form.AreaWidth.value(),
+            "board_length": self.form.BoardLength.value(),
+            "board_width": self.form.BoardWidth.value(),
+            "board_height": self.form.BoardHeight.value(),
+            "vertical_design": self.form.RadioBtVertical.isChecked(),
+            "reverse_order": self.form.ReverseOrder.isChecked(),
+            "create_area_object": self.form.CreateAreaObject.isChecked(),
+            "add_labels": self.form.AddLabels.isChecked(),
+            "remove_b_cuts": self.form.RemoveBCuts.value(),
+            "pattern": self.form.LineEditPattern.text(),
+            "algorithm_tab": self.form.TabWidgetAlgorithm.currentIndex()
+        }
+        with open(self.save_file_path, mode="w", encoding="utf-8") as write_file:
+            json.dump(data, write_file)
+
+
+
+    def load_values(self):
+        if os.path.isfile(self.save_file_path):
+            with open(self.save_file_path, mode="r", encoding="utf-8") as read_file:
+                data = json.load(read_file)
+            self.form.AreaLength.setValue(data["area_length"])
+            self.form.AreaWidth.setValue(data["area_width"])
+            self.form.BoardLength.setValue(data["board_length"])
+            self.form.BoardWidth.setValue(data["board_width"])
+            self.form.BoardHeight.setValue(data["board_height"])
+
+            if data["vertical_design"]:
+                self.form.RadioBtVertical.setChecked(True)
+            else:
+                self.form.RadioBtHorizontal.setChecked(True)
+
+            self.form.ReverseOrder.setChecked(data["reverse_order"])
+            self.form.CreateAreaObject.setChecked(data["create_area_object"])
+            self.form.AddLabels.setChecked(data["add_labels"])
+            self.form.RemoveBCuts.setValue(data["remove_b_cuts"])
+            self.form.LineEditPattern.setText(data["pattern"])
+            self.form.TabWidgetAlgorithm.setCurrentIndex(data["algorithm_tab"])
+
+
+
+
+    def set_vertical_design_labels(self, state):
+        if self.form.RadioBtHorizontal.isChecked() == False:
+            self.form.AreaWidthLabel.setText("Height (z)")
+            self.form.BoardWidthLabel.setText("Height (z)")
+            self.form.BoardHeightLabel.setText("Width (y)")
+        else:
+            self.form.AreaWidthLabel.setText("Width (y)")
+            self.form.BoardWidthLabel.setText("Width (y)")
+            self.form.BoardHeightLabel.setText("Height (z)")
+
+
+
+
+    def set_preset(self, index):
+        if index > 0:
+            self.form.BoardLength.setValue(PRESETS[index-1][1])
+            self.form.BoardWidth.setValue(PRESETS[index-1][2])
+            self.form.BoardHeight.setValue(PRESETS[index-1][3])
+
+
+
+    def show_selection_sizes(self):
+        # get and show selected face
+        sel = FreeCADGui.Selection.getSelectionEx()
+        if len(sel) > 0 and len(sel[0].SubObjects) > 0:
+            sel = sel[0].SubObjects[0]
+            if sel.ShapeType == "Face":
+                sizes = sorted(list(set([round(i.Length, 2) for i in sel.Edges])), reverse=True)
+                self.form.LabelSelectedFace.show()
+                self.form.LabelSelectedFace.setText("Selected Face: " + str(sizes[0]) + " x " + str(sizes[1]))
+
+                # set area sizes
+                self.form.AreaLength.setValue(sizes[0])
+                self.form.AreaWidth.setValue(sizes[1])
+
+
+
+
+
+
+
+    def swap_area_values(self):
+        l = self.form.AreaLength.value()
+        w = self.form.AreaWidth.value()
+        self.form.AreaLength.setValue(w)
+        self.form.AreaWidth.setValue(l)
+
+
+
+    def swap_board_values(self):
+        l = self.form.BoardLength.value()
+        w = self.form.BoardWidth.value()
+        self.form.BoardLength.setValue(w)
+        self.form.BoardWidth.setValue(l)
+
+
+
+    def update_results(self):
+        # update variables
+        self.AREA_LENGTH = self.form.AreaLength.value()
+        self.AREA_WIDTH = self.form.AreaWidth.value()
+        self.BOARD_LENGTH = self.form.BoardLength.value()
+        self.BOARD_WIDTH = self.form.BoardWidth.value()
+        self.BOARD_HEIGHT = self.form.BoardHeight.value()
+
+        # calculate sizes and amounts
+        # area
+        area = self.form.AreaLength.value() * self.form.AreaWidth.value() / 1000000
+        self.form.LabelArea.setText(str(round(area, 2)) + " m²")
+
+        # fill amount length
+        self.amount_length_net = self.AREA_LENGTH / self.BOARD_LENGTH
+        self.amount_length_gross = math.ceil(self.AREA_LENGTH / self.BOARD_LENGTH)
+
+        # fill amount width
+        self.amount_width_net = self.AREA_WIDTH / self.BOARD_WIDTH
+        self.amount_width_gross = math.ceil(self.AREA_WIDTH / self.BOARD_WIDTH)
+
+        # estimated amount of boards
+        self.amount_boards_net = self.amount_length_net * self.amount_width_net
+        self.amount_boards_gross = math.ceil(self.amount_length_net * self.amount_width_gross)
+
+        # estimated amount of tiles in pattern
+        self.amount_tiles_in_pattern_gross = (self.amount_length_gross * self.amount_width_gross) + self.amount_width_gross
+
+        # set estimation depending on tab (algorithm) selection
+        if self.form.TabWidgetAlgorithm.currentIndex() == 0:
+            self.form.EstimatedAmount.setValue(self.amount_boards_gross)
+        else:
+            self.form.EstimatedAmount.setValue(self.amount_tiles_in_pattern_gross)
+
+
+
+
+
+
+
+           
+    def create_next_board(self, name):
+        myObj = DOC.addObject("Part::Box", name)
+        myObj.Length = self.board["bl"]
+        myObj.Width = self.board["bw"]
+        myObj.Height = self.BOARD_HEIGHT
+        myObj.Placement = Placement(Vector(self.board["x"],self.board["y"],0), Rotation(Vector(0,0,1), 0))
+
+        # set color
+        #myObj.ViewObject.ShapeAppearance = FreeCAD.Material(DiffuseColor=(0.67, 0.33, 0.00))
+
+        self.board_container.addObject(myObj)
+
+        if self.form.AddLabels.isChecked():
+            myObjText = Draft.make_text(str(int(self.board["bl"])), placement=Vector(self.board["x"]+(self.board["bl"]/2), self.board["y"]+(self.board["bw"]/2), self.BOARD_HEIGHT), screen=None, height=self.board["bw"]/4, line_spacing=None)
+            myObjText.Label = name + "_" + str(int(self.board["bl"]))
+            myObjText.ViewObject.Justification = u"Center"
+            self.label_container.addObject(myObjText)
+
+        return myObj
+
+
+
+    def generate_boards(self):
+        # setup and show progressbar
+        self.form.ProgressBar.setMaximum(self.form.EstimatedAmount.value())
+        self.form.ProgressBar.show()
+
+        # move y starting point down by board width if reversed order
+        if self.reverse_order:
+            self.board["y"] = -self.BOARD_WIDTH
+
+
+        # generate boards
+        for i in range(self.amount_boards_gross):
+            self.board["n"] += 1
+            self.form.ProgressBar.setValue(self.board["n"])
+
+
+            # set full board
+            if (self.board["x"] + self.BOARD_LENGTH) < self.AREA_LENGTH:
+                myObj = self.create_next_board("Board" + str(self.board["n"]) + "_full")
+
+                # prepare next full board
+                self.board["x"] += self.BOARD_LENGTH
+
+
+            # set full end board
+            elif (self.board["x"] + self.BOARD_LENGTH) == self.AREA_LENGTH:
+                myObj = self.create_next_board("Board" + str(self.board["n"]) + "_full")
+
+                # prepare next full board
+                self.board["x"] = 0
+                self.board["y"] += self.BOARD_WIDTH
+                self.board["bl"] = self.BOARD_LENGTH
+
+
+
+            # set cut boards part a and part b
+            else:
+                board_part_a = self.AREA_LENGTH - self.board["x"]
+                board_part_b = self.BOARD_LENGTH - board_part_a
+
+                # set board part a
+                self.board["bl"] = board_part_a
+                myObj = self.create_next_board("Board" + str(self.board["n"]) + "_cut_a")
+
+
+                # set board part b
+                self.board["x"] = 0
+
+                if self.reverse_order:
+                    self.board["y"] -= self.BOARD_WIDTH
+                else:
+                    self.board["y"] += self.BOARD_WIDTH
+
+                if board_part_b >= self.form.RemoveBCuts.value(): # keep b cuts (normal behavior)
+                    self.board["bl"] = board_part_b
+                    myObj = self.create_next_board("Board" + str(self.board["n"]) + "_cut_b")
+
+                    # prepare next full board
+                    self.board["x"] = board_part_b
+                    self.board["bl"] = self.BOARD_LENGTH
+
+                else: # remove b cuts (do not create it but prepare next full board)
+                    self.board["x"] = 0
+                    self.board["bl"] = self.BOARD_LENGTH
+
+
+
+
+
+    def generate_pattern(self):
+        # setup and show progressbar
+        self.form.ProgressBar.setMaximum(self.amount_boards_gross)
+        self.form.ProgressBar.show()
+
+        # move y starting point down by board width if reversed order
+        if self.reverse_order:
+            self.board["y"] = -self.BOARD_WIDTH
+
+
+        # get pattern
+        pattern_text = self.form.LineEditPattern.text()
+        pattern = pattern_text.split(",")
+        self.pattern = [int(i) for i in pattern]
+        # self.pattern = [600, 300]
+        pattern_index = 0
+
+
+        # generate tile pattern
+        for i in range(self.amount_tiles_in_pattern_gross):
+            self.board["n"] += 1
+            self.form.ProgressBar.setValue(self.board["n"])
+
+
+            # set full tile
+            if (self.board["x"] + self.BOARD_LENGTH) < self.AREA_LENGTH:
+
+                # set first tile size
+                if self.board["x"] == 0:
+                    self.board["bl"] = self.pattern[pattern_index]
+                else:
+                    self.board["bl"] = self.BOARD_LENGTH
+
+                # create tile
+                myObj = self.create_next_board("Tile" + str(self.board["n"]))
+
+
+                # prepare next full tile in same row
+                if self.board["x"] == 0:
+                    self.board["x"] += self.pattern[pattern_index]
+                else:
+                    self.board["x"] += self.BOARD_LENGTH
+
+
+            # set part tile and move y up
+            else:
+                tile_end_part = self.AREA_LENGTH - self.board["x"]
+
+                # set tile end
+                self.board["bl"] = tile_end_part
+                myObj = self.create_next_board("Tile" + str(self.board["n"]))
+
+                if self.reverse_order:
+                    self.board["y"] -= self.BOARD_WIDTH
+                else:
+                    self.board["y"] += self.BOARD_WIDTH
+
+                # prepare next full tile
+                self.board["x"] = 0
+
+                # set pattern index
+                if pattern_index < len(pattern) -1:
+                    pattern_index += 1
+                else:
+                    pattern_index = 0
+
+
+
+
+
+    def run_all(self):
+        # update everything
+        self.update_results()
+
+        # set placement order
+        self.reverse_order = self.form.ReverseOrder.isChecked()
+
+
+        # create area object
+        if self.form.CreateAreaObject.isChecked():
+            self.area_object = DOC.addObject("Part::Box", "Area")
+            self.area_object.Length = self.AREA_LENGTH
+            self.area_object.Width = self.AREA_WIDTH
+            self.area_object.Height = 100
+            if self.reverse_order:
+                self.area_object.Placement = Placement(Vector(0, -self.AREA_WIDTH, -100), Rotation(Vector(0, 0, 1), 0))
+            else:
+                self.area_object.Placement = Placement(Vector(0, 0, -100), Rotation(Vector(0, 0, 1), 0))
+        else:
+            self.area_object = None
+
+
+        # create label container if needed
+        if self.form.AddLabels.isChecked():
+            self.label_container = DOC.addObject('App::Part', 'Labels')
+
+
+        # GENERATE boards and tiles and put them into a container
+        if self.form.TabWidgetAlgorithm.currentIndex() == 0:
+            self.board_container = DOC.addObject('App::Part', 'Boards')
+            self.generate_boards()
+        else:
+            self.board_container = DOC.addObject('App::Part', 'Tiles')
+            self.generate_pattern()
+
+
+        # put label container inside board container
+        if self.form.AddLabels.isChecked():
+            self.board_container.addObject(self.label_container)
+
+
+
+        # rotate for vertical design
+        if self.form.RadioBtVertical.isChecked():
+            self.board_container.Placement = Placement(Vector(0, 0, 0), Rotation(Vector(1, 0, 0), 90))
+            if self.area_object != None:
+                self.area_object.Placement = Placement(Vector(0, 100, 0), Rotation(Vector(1, 0, 0), 90))
+                if self.reverse_order:
+                    self.area_object.Placement = Placement(Vector(0, 100, -self.AREA_WIDTH), Rotation(Vector(1, 0, 0), 90))
+
+
+
+
+        # recompute document
+        DOC.recompute()
+
+
+
+# show Task Dialog
+panel = BoxTaskPanel()
+FreeCADGui.Control.showDialog(panel)
+
+
+
+
+
+
