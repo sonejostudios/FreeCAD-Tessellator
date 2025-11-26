@@ -19,8 +19,8 @@
 import FreeCAD
 from FreeCAD import Placement, Rotation, Vector
 import FreeCADGui
-import math
 import Draft
+import math
 import os
 import json
 
@@ -308,8 +308,10 @@ class BoxTaskPanel:
         # set color
         #myObj.ViewObject.ShapeAppearance = FreeCAD.Material(DiffuseColor=(0.67, 0.33, 0.00))
 
+        # add to board container
         self.board_container.addObject(myObj)
 
+        # add label if wanted
         if self.form.AddLabels.isChecked():
             myObjText = Draft.make_text(str(int(self.board["bl"])), placement=Vector(self.board["x"]+(self.board["bl"]/2), self.board["y"]+(self.board["bw"]/2), self.BOARD_HEIGHT), screen=None, height=self.board["bw"]/4, line_spacing=None)
             myObjText.Label = name + "_" + str(int(self.board["bl"]))

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<package format="1" xmlns="https://wiki.freecad.org/Package_Metadata">
+  <name>Tessellator</name>
+  <description>A FreeCAD BIM macro to fill up areas with boards or generate tile patterns.</description>
+  <version>1.0.0</version>
+  <date>2025-11-23</date>
+  <author>Vincent Rateau</author>
+  <maintainer email="info@sonejo.net">Vincent Rateau</maintainer>
+  <license file="LICENSE">GPL-3.0-or-later</license>
+  <url type="repository" branch="main">https://github.com/sonejostudios/FreeCAD-Tessellator</url>
+  <url type="readme" branch="main">https://github.com/sonejostudios/FreeCAD-Tessellator/blob/main/README.md</url>
+  <icon>Tessellator/Tessellator_icon.svg</icon>
+  <freecadmin>1.0</freecadmin>
+
+  <content>
+    <macro>
+      <name>Tessellator</name>
+      <description>A FreeCAD BIM macro to fill up areas with boards or generate tile patterns.</description>
+      <version>1.0.0</version>
+      <subdirectory>./Tessellator</subdirectory>
+      <file>Tessellator.FCMacro</file>
+      <tag>BIM</tag>
+      <depend>Draft</depend>
+      <depend>math</depend>
+      <depend>os</depend>
+      <depend>json</depend>
+    </macro>
+  </content>
+
+</package>
