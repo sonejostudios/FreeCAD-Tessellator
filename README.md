@@ -4,6 +4,8 @@ A FreeCAD BIM macro to fill up areas with boards or generate tile patterns.
 
 ![screenshot](Tessellator/Tessellator_screenshot.png "FreeCAD Tesselator")
 
+[![Watch the video](Tessellator/Tessellator_screenshot.png)](https://github.com/sonejostudios/FreeCAD-Tessellator/blob/main/Tessellator/Tessellator.mp4)
+Video: https://github.com/sonejostudios/FreeCAD-Tessellator/blob/main/Tessellator/Tessellator.mp4
 
 ## Install:
 Copy (unzip if needed) "Tessellator.FCMacro" and the folder "Tessellator" into FreeCAD's Macro folder.
