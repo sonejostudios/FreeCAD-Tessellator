@@ -48,7 +48,7 @@ This is typically used to tessellate OSB or other boards on floors and walls.
 
 
 ### Tile Pattern
-This will fill up the area, using at the beginning of each row a specific tile length, given as a series of lengths (separated by commas). E.g: 300 (A), 200 (B), 100 (C).
+This will fill up the area, using at the beginning of each row a specific tile length, given as a series of lengths (separated by commas). E.g: 400 (X), 200 (Y), 100 (Z).
 
 ![screenshot](Tessellator/pattern.png "FreeCAD Tesselator")
 
